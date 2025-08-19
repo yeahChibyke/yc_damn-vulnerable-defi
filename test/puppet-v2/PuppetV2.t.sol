@@ -117,7 +117,6 @@ contract PuppetV2Challenge is Test {
         weth.approve(address(lendingPool), depositRequired);
 
         lendingPool.borrow(POOL_INITIAL_TOKEN_BALANCE);
-
         token.transfer(recovery, POOL_INITIAL_TOKEN_BALANCE);
     }
 
